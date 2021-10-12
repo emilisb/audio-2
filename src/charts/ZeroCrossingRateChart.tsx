@@ -24,7 +24,7 @@ export const ZeroCrossingRateChart: React.FC<ZeroCrossingRateChartProps> = React
           text: title,
         },
         axisX: {
-          title: 'Kadro nr.',
+          title: 't, s',
         },
         axisY: {
           title: 'NKS',
@@ -67,7 +67,7 @@ const buildChartData = ({
     const frameData = buffer.slice(startCursor, startCursor + frameLengthInSignals);
     const zcr = zeroCrossingRate(frameData);
 
-    chartData.push({x: frame, y: zcr});
+    chartData.push({x: startCursor * period, y: zcr});
   }
 
   return chartData;
