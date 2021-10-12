@@ -75,16 +75,8 @@ const buildChartData = ({
 
 const zeroCrossingRate = (frameData: Float32Array): number => {
   const signs = frameData
-    .map((_, index, signals) => (index > 0 ? Math.abs(sign(signals[index]) - sign(signals[index - 1])) : 0))
+    .map((_, index, signals) => (index > 0 ? Math.abs(Math.sign(signals[index]) - Math.sign(signals[index - 1])) : 0))
     .slice(1);
   const sumOfSigns = signs.reduce((partialSum, item) => partialSum + item, 0);
   return sumOfSigns / (2 * frameData.length);
-};
-
-const sign = (value: number) => {
-  if (value < 0) {
-    return -1;
-  }
-
-  return 1;
 };

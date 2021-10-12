@@ -26,7 +26,7 @@ export const EnergyChart: React.FC<EnergyChartProps> = React.memo(
           text: title,
         },
         axisX: {
-          title: 't, s',
+          title: 'Kadro nr.',
           stripLines: buildSoundLines(energyData, silenceThreshold),
         },
         axisY: {
@@ -43,7 +43,7 @@ export const EnergyChart: React.FC<EnergyChartProps> = React.memo(
         data: [
           {
             type: 'line',
-            dataPoints: energyData,
+            dataPoints: buildEnergyChartData(energyData),
           },
         ],
       };
@@ -53,31 +53,33 @@ export const EnergyChart: React.FC<EnergyChartProps> = React.memo(
   },
 );
 
-const buildSoundLines = (energy: DataPoint[], threshold: number): AxisStripLine[] => {
+const buildEnergyChartData = (energy: number[]): DataPoint[] => {
+  return energy.map((energyItem, index) => ({x: index, y: energyItem}));
+};
+
+const buildSoundLines = (energy: number[], threshold: number): AxisStripLine[] => {
   const lines: AxisStripLine[] = [];
 
   let silence = true;
   let soundStartIndex = 0;
 
-  energy
-    .map((dataPoint) => dataPoint.y)
-    .forEach((energyValue, index) => {
-      const isLastItem = energy.length - 1 === index;
+  energy.forEach((energyValue, index) => {
+    const isLastItem = energy.length - 1 === index;
 
-      if (silence && energyValue > threshold) {
-        silence = false;
-        soundStartIndex = index;
-      } else if (!silence && (energyValue < threshold || isLastItem)) {
-        silence = true;
+    if (silence && energyValue > threshold) {
+      silence = false;
+      soundStartIndex = index;
+    } else if (!silence && (energyValue < threshold || isLastItem)) {
+      silence = true;
 
-        lines.push({
-          startValue: soundStartIndex,
-          endValue: index,
-          opacity: 0.1,
-          color: 'green',
-        });
-      }
-    });
+      lines.push({
+        startValue: soundStartIndex,
+        endValue: index,
+        opacity: 0.1,
+        color: 'green',
+      });
+    }
+  });
 
   return lines;
 };
@@ -90,13 +92,13 @@ const buildEnergyData = ({
   buffer: Float32Array;
   sampleRate: number;
   frameLengthMs: number;
-}): DataPoint[] => {
+}): number[] => {
   const period = ONE_SECOND / sampleRate;
   const periodMs = period * ONE_SECOND_IN_MS;
 
   const frameLengthInSignals = Math.ceil(frameLengthMs / periodMs);
 
-  const energyData: DataPoint[] = [];
+  const energyData: number[] = [];
 
   for (
     let startCursor = 0, frame = 0;
@@ -106,7 +108,7 @@ const buildEnergyData = ({
     const frameData = buffer.slice(startCursor, startCursor + frameLengthInSignals);
     const energy = calculateEnergy(frameData);
 
-    energyData.push({x: startCursor * period, y: energy});
+    energyData.push(energy);
   }
 
   return energyData;
